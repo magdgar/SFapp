@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+    <form method="post" action="/post_user">
+        <label>FirstName:</label>
+        <input id="firstname" name="first_name" type="text">
+
+        <label>LastName:</label>
+        <input id="lastname" name="last_name" type="text">
+
+        <label>BirthDate:</label>
+        <input id="birthdate" name="birth_date" type="date">
+
+        <label>ZipCode:</label>
+        <input id="zipCode" name="zip_code" type="text">
+
+        <input type="submit" />
+    </form>
+
+    {% for user in myUser %}
+        <li>{{ user.first_name }} - {{ user.last_name }}</li>
+    {%  endfor %}
+
+    {{ oneItem.first_name }}
+
+</body>
+</html>
