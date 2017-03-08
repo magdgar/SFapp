@@ -1,6 +1,6 @@
 from flask import render_template
-from app import app, db
-from app.models import User
+from application import app, db
+from application.models import User
 from flask import redirect
 from flask import request
 from flask import url_for
@@ -21,8 +21,29 @@ def profile(first_name):
 
 @app.route('/post_user', methods=['POST'])
 def post_user():
-    user = User(request.form['first_name'], request.form['last_name'],
-                request.form['birth_date'], request.form['zip_code'])
+    user = User(request.json['first_name'], request.json['last_name'],
+                request.json['birth_date'], request.json['zip_code'])
     db.session.add(user)
     db.session.commit()
     return redirect(url_for('index'))
+
+
+@app.route('/update_user/<user_id>', methods=['PATCH'])
+def update_user(user_id):
+    json_user = {
+        "first_name": request.json['first_name'],
+        "last_name": request.json['last_name'],
+        "birth_date": request.json['birth_date'],
+        "zip_code": request.json['zip_code'],
+    }
+    db.session.query(User).filter_by(id=user_id).update(json_user)
+    db.session.commit()
+    return render_template('profile.html', user=json_user)
+
+
+@app.route('/delete_user/<user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    user = User.query.filter(User.id == user_id).first()
+    db.session.delete(user)
+    db.session.commit()
+    return render_template('profile.html', user=user)
