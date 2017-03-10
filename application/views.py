@@ -13,14 +13,25 @@ def index():
     return render_template('add_user.html', myUser=myUser, oneItem=oneItem)
 
 
-@app.route('/profile/<first_name>')
-def profile(first_name):
-    user = User.query.filter_by(first_name=first_name).first()
-    return render_template('profile.html', user=user)
+@app.route('/user', methods=['GET', 'POST'], defaults={'user_id': None})
+@app.route('/user/<user_id>', methods=['GET', 'PATCH', 'DELETE'])
+def user_handler(user_id):
+    return {
+        'GET':  _get_user(user_id),
+        'POST':  _post_user(),
+        'PATCH': _update_user(user_id),
+        'DELETE': _delete_user(user_id)
+    }[request.method]
 
 
-@app.route('/post_user', methods=['POST'])
-def post_user():
+def _get_user(user_id):
+    if user_id is None:
+        return db.session.query(User).all()
+    else:
+        return db.session.query(User).filter_by(id=user_id).first()
+
+
+def _post_user():
     user = User(request.json['first_name'], request.json['last_name'],
                 request.json['birth_date'], request.json['zip_code'])
     db.session.add(user)
@@ -28,8 +39,7 @@ def post_user():
     return redirect(url_for('index'))
 
 
-@app.route('/update_user/<user_id>', methods=['PATCH'])
-def update_user(user_id):
+def _update_user(user_id):
     json_user = {
         "first_name": request.json['first_name'],
         "last_name": request.json['last_name'],
@@ -41,9 +51,8 @@ def update_user(user_id):
     return render_template('profile.html', user=json_user)
 
 
-@app.route('/delete_user/<user_id>', methods=['DELETE'])
-def delete_user(user_id):
-    user = User.query.filter(User.id == user_id).first()
+def _delete_user(user_id):
+    user = User.query.filter_by(id=user_id).first()
     db.session.delete(user)
     db.session.commit()
     return render_template('profile.html', user=user)
