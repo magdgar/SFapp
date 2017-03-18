@@ -1,9 +1,7 @@
-from flask import render_template
+from flask import render_template, jsonify
 from application import app, db
 from application.models import User
-from flask import redirect
 from flask import request
-from flask import url_for
 
 
 @app.route('/')
@@ -17,26 +15,27 @@ def index():
 @app.route('/user/<user_id>', methods=['GET', 'PATCH', 'DELETE'])
 def user_handler(user_id):
     return {
-        'GET':  _get_user(user_id),
-        'POST':  _post_user(),
-        'PATCH': _update_user(user_id),
-        'DELETE': _delete_user(user_id)
-    }[request.method]
+            'GET':  _get_user,
+            'POST':  _post_user,
+            'PATCH': _update_user,
+            'DELETE': _delete_user
+        }[request.method](user_id)
 
 
 def _get_user(user_id):
     if user_id is None:
-        return db.session.query(User).all()
+        return jsonify({"data": [user.as_dict() for user in db.session.query(User).all()]})
     else:
-        return db.session.query(User).filter_by(id=user_id).first()
+        return jsonify({"user": db.session.query(User).filter_by(id=user_id).first().as_dict()})
 
 
-def _post_user():
-    user = User(request.json['first_name'], request.json['last_name'],
+def _post_user(args):
+    if request is not None:
+        user = User(request.json['first_name'], request.json['last_name'],
                 request.json['birth_date'], request.json['zip_code'])
     db.session.add(user)
     db.session.commit()
-    return redirect(url_for('index'))
+    return jsonify({"user": user.as_dict()})
 
 
 def _update_user(user_id):
@@ -48,11 +47,11 @@ def _update_user(user_id):
     }
     db.session.query(User).filter_by(id=user_id).update(json_user)
     db.session.commit()
-    return render_template('profile.html', user=json_user)
+    return _get_user(user_id)
 
 
 def _delete_user(user_id):
     user = User.query.filter_by(id=user_id).first()
     db.session.delete(user)
     db.session.commit()
-    return render_template('profile.html', user=user)
+    return jsonify({"user": user.as_dict()})

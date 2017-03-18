@@ -15,5 +15,7 @@ class User(db.Model):
         self.zip_code = zip_code
 
     def __repr__(self):
-
         return '<User %r>' % self.first_name
+
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
