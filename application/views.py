@@ -27,7 +27,8 @@ def _get_user(user_id):
         # return jsonify({"data": [user.as_dict() for user in db.session.query(User).all()]})
         return render_template("add_user.html", allUsers=[user.as_dict() for user in db.session.query(User).all()])
     else:
-        return jsonify({"user": db.session.query(User).filter_by(id=user_id).first().as_dict()})
+        # return jsonify({"user": db.session.query(User).filter_by(id=user_id).first().as_dict()})
+        return render_template("user.html", user=db.session.query(User).filter_by(id=user_id).first().as_dict())
 
 
 def _post_user(args):
