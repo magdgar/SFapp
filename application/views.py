@@ -24,26 +24,28 @@ def user_handler(user_id):
 
 def _get_user(user_id):
     if user_id is None:
-        return jsonify({"data": [user.as_dict() for user in db.session.query(User).all()]})
+        # return jsonify({"data": [user.as_dict() for user in db.session.query(User).all()]})
+        return render_template("add_user.html", allUsers=[user.as_dict() for user in db.session.query(User).all()])
     else:
         return jsonify({"user": db.session.query(User).filter_by(id=user_id).first().as_dict()})
 
 
 def _post_user(args):
     if request is not None:
-        user = User(request.json['first_name'], request.json['last_name'],
-                request.json['birth_date'], request.json['zip_code'])
+        user = User(request.form['first_name'], request.form['last_name'],
+                request.form['birth_date'], request.form['zip_code'])
     db.session.add(user)
     db.session.commit()
-    return jsonify({"user": user.as_dict()})
+    # return jsonify({"user": user.as_dict()})
+    return render_template("new_user.html", user=user)
 
 
 def _update_user(user_id):
     json_user = {
-        "first_name": request.json['first_name'],
-        "last_name": request.json['last_name'],
-        "birth_date": request.json['birth_date'],
-        "zip_code": request.json['zip_code'],
+        "first_name": request.form['first_name'],
+        "last_name": request.form['last_name'],
+        "birth_date": request.form['birth_date'],
+        "zip_code": request.form['zip_code'],
     }
     db.session.query(User).filter_by(id=user_id).update(json_user)
     db.session.commit()
@@ -54,4 +56,6 @@ def _delete_user(user_id):
     user = User.query.filter_by(id=user_id).first()
     db.session.delete(user)
     db.session.commit()
-    return jsonify({"user": user.as_dict()})
+    # return jsonify({"user": user.as_dict()})
+    return render_template("deleted_user.html", user=user)
+
